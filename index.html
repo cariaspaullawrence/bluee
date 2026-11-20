@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClubConnect</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f4f7fc;color:#29364b}
+header{background:#345b9d;color:white;padding:28px}main{max-width:850px;margin:auto;padding:20px}
+.card{background:white;padding:22px;border-radius:15px;margin:20px 0}
+input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:9px}
+button{background:#345b9d;color:white;border:0;cursor:pointer}
+.item{padding:15px;border-bottom:1px solid #eee}.actions{display:flex;gap:8px}.actions button{width:auto}
+</style></head>
+<body>
+<header><h1>🎭 ClubConnect</h1><p>Discover your campus community.</p></header>
+<main>
+<div class="card"><h2>Add Organization</h2>
+<input id="club" placeholder="Organization name">
+<select id="category"><option>Academic</option><option>Sports</option><option>Arts and Culture</option><option>Volunteer</option><option>Technology</option><option>Other</option></select>
+<input id="president" placeholder="Organization president">
+<input id="schedule" placeholder="Meeting schedule">
+<textarea id="description" placeholder="Organization description"></textarea>
+<button id="add">Add Organization</button></div>
+<div class="card"><h2>Campus Organizations</h2>
+<input id="search" placeholder="Search organizations..."><div id="list"></div></div>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),key='clubconnect29';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data=[];try{data=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(data))data=[]}catch{}
+function save(){localStorage.setItem(key,JSON.stringify(data));render()}
+function add(){
+let n=$('club').value.trim(),c=$('category').value,p=$('president').value.trim(),s=$('schedule').value.trim(),d=$('description').value.trim();
+if(!n||!p||!s||!d)return alert('Complete all fields.');
+data.unshift({id:Date.now().toString()+Math.random(),n,c,p,s,d});
+['club','president','schedule','description'].forEach(id=>$(id).value='');save();
+}
+function edit(id){
+let x=data.find(a=>a.id===id);if(!x)return;
+let p=prompt('President:',x.p);if(p===null)return;if(!p.trim())return;
+let s=prompt('Meeting schedule:',x.s);if(s===null)return;if(!s.trim())return;
+x.p=p.trim();x.s=s.trim();save();
+}
+function del(id){if(confirm('Delete organization?')){data=data.filter(x=>x.id!==id);save()}}
+function render(){
+let q=$('search').value.toLowerCase();
+$('list').innerHTML=data.filter(x=>(x.n+x.c+x.p+x.d).toLowerCase().includes(q)).map(x=>`
+<div class="item"><h3>🏛️ ${esc(x.n)}</h3><p>${esc(x.c)}</p>
+<p>President: ${esc(x.p)}</p><p>Meetings: ${esc(x.s)}</p><p>${esc(x.d)}</p>
+<div class="actions"><button data-edit="${x.id}">Edit</button><button data-del="${x.id}">Delete</button></div></div>`).join('')||'No organizations added.'}
+$('add').addEventListener('click',add);$('search').addEventListener('input',render);
+$('list').addEventListener('click',e=>{if(e.target.dataset.edit)edit(e.target.dataset.edit);if(e.target.dataset.del)del(e.target.dataset.del)});
+render();
+})();
+</script></body></html>
